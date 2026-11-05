@@ -23,9 +23,31 @@ Upstream sweet history and handoffs are preserved below, untouched.
 - **Kernel**: unchanged from sweet (same SoC); build via `gh workflow run xnu.yml`.
 - **Boot line delta**: `sweettouch=0` (Goodix I2C driver must not probe; karna's touch is
   Novatek NT36672C on SPI, GPIOs 8/9, vddio L18A — driver is the Phase-4 work).
-- **Next actions**: (1) CI kernel build; (2) local shim build with karna stock DTB;
-  (3) after unlock: collect_board.sh, verify live FDT against the table in
-  docs/KARNA-PORT.md, then `fastboot boot`.
+- **EVENING UPDATE — Phase 1 COMPLETE (built + verified, awaiting unlock):**
+  - Stock firmware ROM for the exact build (V13.0.1.0.SJGINXM, 3.5 GB, bn.d.miui.com mirror)
+    downloaded on the build host; boot.img unpacked; **base `qcom,sm6150` DTB extracted from
+    the post-ramdisk blob** (v2 header dtb_size=0; ABL scans for FDT magic there; 800 pages,
+    now `dtb/boot_unpacked/dtb`). dtbo.img = 32 QCOM overlays, big-endian table; karna panels
+    `nt36672c_huaxing/tianma_fhd_video` confirmed **video mode** (no refresh kick needed).
+  - **Every ADT value verified against the stock DTB**: cont_splash `0x9c000000/0xf00000`,
+    ufshc `0x1d84000/0x3000` (+ICE 0x1d90000). Touch node NOT in the ROM trees (ABL-side;
+    read the live FDT after unlock; J20 dtsi reference: GPIO 8/9, L18A).
+  - **Kernel built**: CI run `42047110930` (this repo, macos-14, 7 m). **QEMU smoke test
+    passes**: no_panic_observed, platform expert + AppleCLCD 0x9c000000 + AMFI/sandbox/HFS +
+    init heartbeat (output `research/q-karna-out/` on the Mac).
+  - **`shim/out/shim-boot.img` BUILT** (20 MB, sha256 e24919f9…44f3da0): payload.bin
+    (kernel + karna ADT --highmem + cmdline with `sweettouch=0`) + stock DTB blob; both
+    unpack round-trips byte-identical. Assembled on the build host
+    (`/root/iosdroid/ios-karna/shim/out/`) because the Mac disk filled (Chrome
+    code_sign_clone cache ~167 GB in /var/folders — owner declined cleanup; all heavy work
+    moved to the server).
+  - **Root exploit (CVE-2026-43499 repos) assessed and not viable on this 4.14 unit**:
+    chain targets 5.10+/6.x (uclamp, rtmutex PI trees, BTF struct offsets); 4.14 would need
+    its own port. Unneeded anyway — the ROM == the phone (locked, never reflashed).
+  - **Next actions**: (1) user starts the Mi-account unlock clock (docs/KARNA-PORT.md
+    day-0/day-7 runbook); (2) after unlock: `fastboot boot shim/out/shim-boot.img` —
+    expected first result: kernel console on panel / persistent log; (3) Phase 2: iPhone X
+    root image (mkiosroot.sh on Linux — the build host can run it) + d22ap.adt /product.
 
 ---
 

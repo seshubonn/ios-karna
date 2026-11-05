@@ -18,9 +18,10 @@ already boots — so the XNU kernel, the boot shim, the UFS root and the entire 
 | Touch | Goodix GT9896, I²C QUP SE7 | **Novatek NT36672C, SPI** — Goodix driver disabled (`sweettouch=0`) until a Novatek SPI driver exists | live input stack: `NVTCapacitiveTouchScreen`; downstream DTS: reset GPIO 8, IRQ GPIO 9, vddio L18A, 8 MHz SPI |
 | Identity | `xiaomi,sweet` | `xiaomi,karna|xiaomi,surya|` + `xiaomi,sweet` (SweetPlatformExpert still matches) | — |
 
-Status: **prepared, not yet hardware-tested** — the target unit's bootloader is locked
-(Xiaomi server-side unlock, see the runbook), so the first `fastboot boot` can only happen
-after the unlock. Everything that can be built and verified before that is done here.
+Status: **Phase 1 built and verified** (kernel via CI, QEMU smoke test clean, boot image
+assembled with the stock DTB — see `docs/KARNA-PORT.md`) — but **not yet hardware-tested**:
+the target unit's bootloader is locked (Xiaomi server-side unlock, see the runbook), so the
+first `fastboot boot` can only happen after the unlock.
 
 ## Build
 
